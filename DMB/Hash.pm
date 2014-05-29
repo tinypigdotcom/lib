@@ -15,34 +15,33 @@ our @EXPORT = qw(
   key_diff_detail
 );
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 sub key_diff {
-    my ( $hashref1, $hashref2 ) = @_;
+    my @inputs = @_;
 
-    my %hash1 = %$hashref1;
-    my %hash2 = %$hashref2;
+    my @hrefs;
+
+    %{ $hrefs[$_] } = %{ $inputs[$_] } for ( 0 .. 1 );
     my %common;
 
-    for my $ii ( keys %$hashref1 ) {
-        if ( delete $hash2{$ii} ) {
-            $common{$ii}++;
+    for my $jj ( 0 .. 1 ) {
+        my $mm = $jj ? $hrefs[0] : $hrefs[1];
+        for my $ii ( keys %{ $inputs[$jj] } ) {
+            if ( delete $mm->{$ii} ) {
+                $common{$ii}++;
+            }
         }
     }
 
-    for my $jj ( keys %$hashref2 ) {
-        if ( delete $hash1{$jj} ) {
-            $common{$jj}++;
-        }
-    }
-
-    return ( [ keys %hash1 ], [ keys %hash2 ], [ keys %common ] );
+    return ( [ keys %{ $hrefs[0] } ], [ keys %{ $hrefs[1] } ],
+        [ keys %common ] );
 }
 
 sub key_diff_detail {
     my @hrefs = @_;
 
-    my @arefs = key_diff( $hrefs[0], $hrefs[1] );
+    my @arefs = key_diff( @hrefs );
 
     my $output;
     my @titles;
@@ -52,7 +51,7 @@ sub key_diff_detail {
     for my $jj ( 0 .. 1 ) {
         my $mm = $jj ? $hrefs[0] : $hrefs[1];
         $output .= ( shift @titles ) . "\n";
-        for my $ii ( sort { $a cmp $b } keys %{$hrefs[$jj]} ) {
+        for my $ii ( sort { $a cmp $b } keys %{ $hrefs[$jj] } ) {
             $output .= ( $mm->{$ii} ? '*' : ' ' ) . " $ii\n";
         }
         $output .= "\n";
