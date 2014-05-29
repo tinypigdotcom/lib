@@ -1,0 +1,2 @@
+set -x
+PERL_DL_NONLAZY=1 perl "-MExtUtils::Command::MM" "-MTest::Harness" "-e" "undef *Test::Harness::Switches; test_harness(0, 'blib/lib', 'blib/arch')" *.t

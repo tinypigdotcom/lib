@@ -1,0 +1,54 @@
+
+my %me;
+my %chris;
+my %common;
+
+open I, "me.csv";
+while (<I>) {
+    chop;
+    chop;
+    my ($code,$country) = split /;/;
+    $country = lc($country);
+    $me{$code}=$country;
+}
+close I;
+
+
+open I, "chris.csv";
+while (<I>) {
+    chop;
+    chop;
+    my ($country,$code) = split /,/;
+    $country = lc($country);
+    $chris{$code}=$country;
+}
+close I;
+
+say "me not chris:";
+for (keys %me) {
+    if(!$chris{$_}) {
+        print "$_ $me{$_} VS *MISSING*\n";
+    }
+    elsif($chris{$_} ne $me{$_}) {
+        print "$_ $me{$_} VS $chris{$_}\n";
+    }
+    else {
+        $common{$_}++;
+    }
+}
+
+say "chris not me";
+for (keys %chris) {
+    if(!$me{$_}) {
+        print "$_ $chris{$_} VS *MISSING*\n";
+    }
+    elsif($me{$_} ne $chris{$_}) {
+        print "$_ $chris{$_} VS $me{$_}\n";
+    }
+    else {
+        $common{$_}++;
+    }
+}
+
+print "common: ", scalar keys %common, "\n";
+
