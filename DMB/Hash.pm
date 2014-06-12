@@ -13,6 +13,7 @@ our @ISA = qw(Exporter);
 our @EXPORT = qw(
   key_diff
   key_diff_detail
+  key_diff_from_files
 );
 
 our $VERSION = '0.02';
@@ -68,6 +69,51 @@ sub key_diff_detail {
     }
 
     return $output;
+}
+
+sub key_diff_from_files {
+    my @inputs = @_;
+
+    my ($key,$value);
+
+    if ( -e 'a1' ) {
+        $fh = IO::File->new("<a1");
+        if (defined $fh) {
+            print $fh (scalar localtime) . " $data\n";
+            $fh->close;
+        }
+    }
+
+    open I, "a1";
+    while (<I>) {
+        chomp $line;
+        $line =~ s/\r$//;
+        ($key,$value) = split /;/;
+        $me{$value}=$key;
+    }
+    close I;
+
+    open I, "a2";
+    while (<I>) {
+        chomp $line;
+        $line =~ s/\r$//;
+        ($key,$value) = split /;/;
+        $me{$value}=$key;
+    }
+    close I;
+}
+
+sub dt_log {
+    my ($filestring,$data) = @_;
+
+    my $fh = IO::File->new();
+    if ( -e '/tmp/debug_on' ) {
+        $fh = IO::File->new(">> /tmp/dt_$filestring");
+        if (defined $fh) {
+            print $fh (scalar localtime) . " $data\n";
+            $fh->close;
+        }
+    }
 }
 
 1;
