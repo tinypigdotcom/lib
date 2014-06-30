@@ -1,6 +1,6 @@
 package DMB::Tools;
 
-use 5.016;
+use 5.14.0;
 use strict;
 use warnings;
 
@@ -13,11 +13,11 @@ our @ISA = qw(Exporter);
 # names by default without a very good reason. Use EXPORT_OK instead.
 # Do not simply export all your public functions/methods/constants.
 
-# This allows declaration	use Foo ':all';
+# This allows declaration   use Foo ':all';
 # If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
 # will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-	
+
 ) ] );
 
 our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
@@ -25,6 +25,7 @@ our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
 our @EXPORT = qw(
     dt_first_value
     dt_log
+    column_output
 );
 
 our $VERSION = '0.01';
@@ -45,11 +46,48 @@ sub dt_log {
 
     my $fh = IO::File->new();
     if ( -e '/tmp/debug_on' ) {
-        $fh = IO::File->new(">> /tmp/dt_$filestring");
+        my $file = "/tmp/dt_$filestring";
+        $fh = IO::File->new(">> $file");
+        my $mode = 0666;
+        chmod $mode, $file;
         if (defined $fh) {
-            print $fh (scalar localtime) . " $data\n";
+            if ( ref $data ) {
+                $data = Dumper($data);
+            }
+            print $fh '=' x 79, "\n";
+            print $fh (scalar localtime), "\n";
+            print $fh '=' x 79, "\n";
+            print $fh " $data\n";
             $fh->close;
         }
+    }
+}
+
+sub column_output {
+    my ($nn) = @_;
+    my @lengths=();
+    my $jj;
+    for (@$nn) {
+        $jj=0;
+        for my $ii (@$_) {
+            $ii //= '';
+            my $len = length $ii;
+            $lengths[$jj] //= 0;
+            if ( $len > $lengths[$jj] ) {
+                $lengths[$jj] = $len;
+            }
+            $jj++;
+        }
+    }
+
+    for (@$nn) {
+        $jj=0;
+        for my $ii (@$_) {
+            $ii //= '';
+            printf "%-$lengths[$jj]s | ", $ii;
+            $jj++;
+        }
+        print "\n";
     }
 }
 
@@ -105,3 +143,4 @@ at your option, any later version of Perl 5 you may have available.
 
 
 =cut
+
