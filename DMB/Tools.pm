@@ -1,37 +1,31 @@
 package DMB::Tools;
 
-use 5.14.0;
+use 5.016;
 use strict;
 use warnings;
 
 require Exporter;
 use IO::File;
+use Data::Dumper;
+use Time::Local;
+
+our $VERSION = '0.02';
 
 our @ISA = qw(Exporter);
 
-# Items to export into callers namespace by default. Note: do not export
-# names by default without a very good reason. Use EXPORT_OK instead.
-# Do not simply export all your public functions/methods/constants.
-
-# This allows declaration   use Foo ':all';
-# If you do not need this, moving things directly into @EXPORT or @EXPORT_OK
-# will save memory.
 our %EXPORT_TAGS = ( 'all' => [ qw(
-
-) ] );
-
-our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
-
-our @EXPORT = qw(
-    dt_first_value
-    dt_log
     column_output
-);
-
-our $VERSION = '0.01';
-
-
-# Preloaded methods go here.
+    dt_first_value
+    fake_uuid
+    random_date_past_year
+    random_element
+    random_names
+    random_profile_id
+    random_words
+    dt_log
+) ] );
+our @EXPORT_OK = ( @{ $EXPORT_TAGS{'all'} } );
+our @EXPORT = qw();
 
 sub dt_first_value {
     my $value = shift;
@@ -91,7 +85,112 @@ sub column_output {
     }
 }
 
+my $hexes = '0123456789abcdef';
+my @hex_list = split '', $hexes;
+
+sub _hexy {
+    my ($num) = @_;
+    my $retval;
+    for ( 1 .. $num ) {
+        $retval .= $hex_list[int(rand(scalar @hex_list))];
+    }
+    return $retval;
+}
+
+sub fake_uuid {
+    my $fake_uuid = _hexy(8) . '-' .
+                    _hexy(4) . '-' .
+                    _hexy(4) . '-' .
+                    _hexy(4) . '-' .
+                    _hexy(12);
+    return $fake_uuid;
+}
+
+sub random_date_past_year {
+    my $ago = int(rand(24 * 60 * 60 * 365));
+    my $random_date = timelocal(localtime()) - $ago;
+    my ($sec, $min, $hour, $mday, $mon, $year) = localtime($random_date);
+
+    my $formatted = sprintf "%02d/%02d/%04d %02d:%02d:%02d", $mon+1, $mday, $year+1900, $hour, $min, $sec;
+    return $formatted;
+}
+
+my $wordlist = "$ENV{HOME}/data/words_pg";
+
+sub random_words {
+    my ($length, $numwords) = @_;
+    my @words;
+
+    open WORDS, '<', $wordlist or die "Cannot open $wordlist:$!";
+
+    while (<WORDS>) {
+        chomp;
+        next if m{'} || m{s$} || m{^[A-Z]};
+        push @words, $_ if (length($_) == $length);
+    }
+
+    close WORDS;
+
+    my @return_words;
+    for (0 .. ($numwords-1)) {
+        push @return_words, $words[int(rand(scalar @words))];
+    }
+
+    return @return_words;
+}
+
+my @profile_ids = (111,222,333,1234,54321,999);
+
+sub random_profile_id {
+    return $profile_ids[int(rand(scalar @profile_ids))];
+}
+
+my %file = (
+    first => "$ENV{HOME}/data/firstname",
+    last  => "$ENV{HOME}/data/lastname",
+);
+my %names = (
+    first => [],
+    last  => [],
+);
+
+my $init_random_names = 0;
+sub init_random_names {
+    return if $init_random_names++;
+    for my $ff ( 'first', 'last' ) {
+        open I, '<', $file{$ff} or die "Cannot open $file{$ff}:$!";
+
+        while (<I>) {
+            chomp;
+            push @{$names{$ff}}, $_;
+        }
+
+        close I;
+    }
+}
+
+sub random_names {
+    my ($num_names) = @_;
+    init_random_names();
+    my @return_names;
+    for (0 .. ($num_names-1)) {
+        my $total_first = scalar @{$names{first}};
+        my $total_last = scalar @{$names{last}};
+        push @return_names, $names{first}->[int(rand($total_first))] . ' ' .
+                            $names{last}->[int(rand($total_last))];
+    }
+
+    return @return_names;
+}
+
+sub random_element {
+    my ($list) = @_;
+
+    return $list->[int(rand(scalar @$list))];
+}
+
 1;
+
 __END__
 # Below is stub documentation for your module. You'd better edit it!
 
