@@ -7,6 +7,7 @@ use warnings;
 require Exporter;
 use IO::File;
 use Data::Dumper;
+use DMB::Tools ':all';
 use base 'DBI';
 
 our $VERSION = '0.0.1';
@@ -21,33 +22,6 @@ sub connect {
                    {'RaiseError' => 1});
 
     return $class->SUPER::connect(@options);
-}
-
-sub greet {
-    my ( $self, $name ) = @_;
-    print $self->{greeting} . " $name!\n";
-}
-
-sub file_contents {
-    use IO::File;
-    my $filename = shift;
-
-    my $ifh = IO::File->new($filename, '<');
-    die if (!defined $ifh);
-
-    $ifh->binmode();
-
-    my $contents = do { local $/; <$ifh> };
-
-    $ifh->close;
-
-    return $contents;
-}
-
-sub file_contents_flat {
-    my $contents = file_contents(shift);
-    $contents =~ s/[\x0a\x0d]//g;
-    return $contents;
 }
 
 package DMB::DB::db;
