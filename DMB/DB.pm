@@ -10,7 +10,7 @@ use Data::Dumper;
 use DMB::Tools ':all';
 use base 'DBI';
 
-our $VERSION = '0.0.1';
+our $VERSION = '0.0.2';
 
 sub connect {
     my $class = shift;
@@ -19,7 +19,7 @@ sub connect {
 
     my @options = ("DBI:mysql:database=menagerie;host=localhost",
                    "dbradford", $password,
-                   {'RaiseError' => 1});
+                   {'PrintError' => 0, 'RaiseError' => 1});
 
     return $class->SUPER::connect(@options);
 }
