@@ -9,7 +9,7 @@ use IO::File;
 use Data::Dumper;
 use Time::Local;
 
-our $VERSION = '0.0.3';
+our $VERSION = '0.0.4';
 
 our @ISA = qw(Exporter);
 
@@ -247,7 +247,7 @@ sub file_contents {
 
     $ifh->close;
 
-    return wantarray ? @contents : "@contents";
+    return wantarray ? @contents : join('',@contents);
 }
 
 sub file_contents_flat {
