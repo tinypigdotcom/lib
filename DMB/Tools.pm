@@ -9,7 +9,7 @@ use IO::File;
 use Data::Dumper;
 use Time::Local;
 
-our $VERSION = '0.0.4';
+our $VERSION = '0.0.5';
 
 our @ISA = qw(Exporter);
 
@@ -18,7 +18,7 @@ our %EXPORT_TAGS = (
         qw(
           column_output
           dt_first_value
-          fake_uuid
+          pseudo_uuid
           random_date_past_year
           random_element
           random_names
@@ -109,14 +109,14 @@ sub _hexy {
     return $retval;
 }
 
-sub fake_uuid {
-    my $fake_uuid =
+sub pseudo_uuid {
+    my $pseudo_uuid =
         _hexy(8) . '-'
       . _hexy(4) . '-'
       . _hexy(4) . '-'
       . _hexy(4) . '-'
       . _hexy(12);
-    return $fake_uuid;
+    return $pseudo_uuid;
 }
 
 sub random_date_past_year {
