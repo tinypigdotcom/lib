@@ -8,8 +8,9 @@ require Exporter;
 use IO::File;
 use Data::Dumper;
 use Time::Local;
+use Date::Parse;
 
-our $VERSION = '0.0.5';
+our $VERSION = '0.0.6';
 
 our @ISA = qw(Exporter);
 
@@ -30,9 +31,11 @@ our %EXPORT_TAGS = (
           file_contents
           file_contents_flat
           file_slurp
+          get_epoch_seconds
           infile
           outfile
           timestamp
+          nice_timestamp
           )
     ]
 );
@@ -280,13 +283,55 @@ sub outfile {
     $ofh->close;
 }
 
+#    my ($ss,$mm,$hh,$day,$month,$year) = gmtime($time-1);
+sub get_epoch_seconds {
+    my @params = @_;
+    my $time;
+    if ( @params == 0 ) {
+        return time();
+    }
+    if ( @params == 1 ) {
+        $time = str2time($params[0],'GMT');
+    }
+    return $time if $time;
+    my ( $sec, $min, $hour, $mday, $mon, $year ) = @params;
+    $time = timegm( $sec, $min, $hour, $mday, $mon, $year );
+    return $time;
+}
+
 sub timestamp {
-    my ( $sec, $min, $hour, $mday, $mon, $year ) = localtime(time);
+    my @params = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year );
+
+    if ( @params == 0 ) {
+        ( $sec, $min, $hour, $mday, $mon, $year ) = localtime(time);
+    }
+    elsif ( @params == 1 ) {
+        ( $sec, $min, $hour, $mday, $mon, $year ) = gmtime(str2time($params[0],'GMT'));
+    }
 
     $mon++;
     $year += 1900;
 
     return sprintf( "%04s%02s%02s%02s%02s%02s",
+        $year, $mon, $mday, $hour, $min, $sec );
+}
+
+sub nice_timestamp {
+    my @params = @_;
+    my ( $sec, $min, $hour, $mday, $mon, $year );
+
+    if ( @params == 0 ) {
+        ( $sec, $min, $hour, $mday, $mon, $year ) = localtime(time);
+    }
+    elsif ( @params == 1 ) {
+        ( $sec, $min, $hour, $mday, $mon, $year ) = gmtime($params[0]);
+    }
+
+    $mon++;
+    $year += 1900;
+
+    return sprintf( "%04s-%02s-%02s %02s:%02s:%02s",
         $year, $mon, $mday, $hour, $min, $sec );
 }
 
