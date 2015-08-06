@@ -5,12 +5,14 @@ use strict;
 use warnings;
 
 require Exporter;
-use IO::File;
-use Data::Dumper;
-use Time::Local;
-use Date::Parse;
 
-our $VERSION = '0.0.6';
+use Data::Dumper;
+use Date::Parse;
+use IO::File;
+use Term::ReadKey;
+use Time::Local;
+
+our $VERSION = '0.0.7';
 
 our @ISA = qw(Exporter);
 
@@ -18,24 +20,25 @@ our %EXPORT_TAGS = (
     'all' => [
         qw(
           column_output
+          directory_read
           dt_first_value
+          dt_log
+          file_contents
+          file_contents_flat
+          file_slurp
+          get_epoch_seconds
+          infile
+          multi_input
+          nice_timestamp
+          outfile
           pseudo_uuid
           random_date_past_year
           random_element
           random_names
           random_profile_id
           random_words
-          dt_log
-          directory_read
-          write_file
-          file_contents
-          file_contents_flat
-          file_slurp
-          get_epoch_seconds
-          infile
-          outfile
           timestamp
-          nice_timestamp
+          write_file
           )
     ]
 );
@@ -334,6 +337,60 @@ sub nice_timestamp {
     return sprintf( "%04s-%02s-%02s %02s:%02s:%02s",
         $year, $mon, $mday, $hour, $min, $sec );
 }
+
+sub multi_input {
+    my $input = '';
+
+    my %INPUT_TYPE = (
+       NONE    => 0,
+       ARGS    => 1,
+       STDIN   => 2,
+       DEFAULT => 3,
+    );
+    my %INPUT_LABEL = reverse %INPUT_TYPE;
+
+    my $input_type = $INPUT_TYPE{NONE};
+
+    my $char;
+    if ( @ARGV ) {
+        $input_type = $INPUT_TYPE{ARGS};
+    }
+    else {
+        ReadMode ('cbreak');
+        if (defined ($char = ReadKey(-1)) ) {
+            $input_type = $INPUT_TYPE{STDIN};
+        }
+        ReadMode ('normal');
+
+        if ( $input_type == $INPUT_TYPE{NONE} ) {
+            $input_type = $INPUT_TYPE{DEFAULT};
+        }
+    }
+    # warn "input_type is: $INPUT_LABEL{$input_type}\n";
+
+    if ( $input_type == $INPUT_TYPE{ARGS} ) {
+        local $/;
+        for my $file (@ARGV) {
+            my $ifh = IO::File->new($file, '<');
+            die "Can't open $file: $!" if (!defined $ifh);
+
+            $input .= <$ifh>;
+            $ifh->close;
+        }
+    }
+    elsif ( $input_type == $INPUT_TYPE{STDIN} ) {
+            $input = $char . do { local $/; <STDIN> };
+    }
+    else {
+        my $file = "$ENV{HOME}/a.cp";
+        my $ifh = IO::File->new($file, '<');
+        die "Can't open $file: $!" if (!defined $ifh);
+        $input = do { local $/; <$ifh> };
+        $ifh->close;
+    }
+    return $input;
+}
+
 
 1;
 
