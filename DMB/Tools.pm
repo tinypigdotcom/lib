@@ -342,33 +342,39 @@ sub multi_input {
     my $input = '';
 
     my %INPUT_TYPE = (
-       NONE    => 0,
-       ARGS    => 1,
-       STDIN   => 2,
-       DEFAULT => 3,
+       NONE     => 0,
+       ARGS     => 1,
+       FILEARGS => 2,
+       STDIN    => 3,
+       DEFAULT  => 4,
     );
     my %INPUT_LABEL = reverse %INPUT_TYPE;
 
-    my $input_type = $INPUT_TYPE{NONE};
+    my $current_input_type = $INPUT_TYPE{NONE};
 
     my $char;
     if ( @ARGV ) {
-        $input_type = $INPUT_TYPE{ARGS};
+        if ( -f $ARGV[0] ) {
+            $current_input_type = $INPUT_TYPE{FILEARGS};
+        }
+        else {
+            $current_input_type = $INPUT_TYPE{ARGS};
+        }
     }
     else {
         ReadMode ('cbreak');
         if (defined ($char = ReadKey(-1)) ) {
-            $input_type = $INPUT_TYPE{STDIN};
+            $current_input_type = $INPUT_TYPE{STDIN};
         }
         ReadMode ('normal');
 
-        if ( $input_type == $INPUT_TYPE{NONE} ) {
-            $input_type = $INPUT_TYPE{DEFAULT};
+        if ( $current_input_type == $INPUT_TYPE{NONE} ) {
+            $current_input_type = $INPUT_TYPE{DEFAULT};
         }
     }
     # warn "input_type is: $INPUT_LABEL{$input_type}\n";
 
-    if ( $input_type == $INPUT_TYPE{ARGS} ) {
+    if ( $current_input_type == $INPUT_TYPE{FILEARGS} ) {
         local $/;
         for my $file (@ARGV) {
             my $ifh = IO::File->new($file, '<');
@@ -378,7 +384,10 @@ sub multi_input {
             $ifh->close;
         }
     }
-    elsif ( $input_type == $INPUT_TYPE{STDIN} ) {
+    elsif ( $current_input_type == $INPUT_TYPE{ARGS} ) {
+        $input = join ' ', @ARGV;
+    }
+    elsif ( $current_input_type == $INPUT_TYPE{STDIN} ) {
             $input = $char . do { local $/; <STDIN> };
     }
     else {
