@@ -9,16 +9,19 @@ require Exporter;
 use Data::Dumper;
 use Date::Parse;
 use IO::File;
+use JSON;
 use Term::ReadKey;
 use Time::Local;
+use URI::Escape;
 
-our $VERSION = '0.0.7';
+our $VERSION = '0.0.8';
 
 our @ISA = qw(Exporter);
 
 our %EXPORT_TAGS = (
     'all' => [
         qw(
+          clip
           column_output
           directory_read
           dt_first_value
@@ -28,9 +31,11 @@ our %EXPORT_TAGS = (
           file_slurp
           get_epoch_seconds
           infile
+          json
           multi_input
           nice_timestamp
           outfile
+          percent_encode
           pseudo_uuid
           random_date_past_year
           random_element
@@ -51,6 +56,24 @@ sub dt_first_value {
         $value = $value->[0];
     }
     return $value;
+}
+
+sub clip {
+    my $data = shift;
+    if ( $data ) {
+        my $cfh = IO::File->new('/dev/clipboard', '>');
+        if (defined $cfh) {
+            print $cfh $data;
+            $cfh->close;
+        }
+    }
+    else {
+        my $ifh = IO::File->new('/dev/clipboard', '<');
+        die if (!defined $ifh);
+        my $contents = do { local $/; <$ifh> };
+        $ifh->close;
+        return $contents;
+    }
 }
 
 sub dt_log {
@@ -336,6 +359,24 @@ sub nice_timestamp {
 
     return sprintf( "%04s-%02s-%02s %02s:%02s:%02s",
         $year, $mon, $mday, $hour, $min, $sec );
+}
+
+sub json {
+    my ($text,$args) = @_;
+    my $json = JSON->new->allow_nonref;
+    $text =~ s{^(\s*)(\w+)}{$1"$2"}mg;
+    if ( !$args->{ugly} ) {
+        $json = $json->pretty;
+    }
+    my $perlvar = $json->decode( $text );
+    my $utf8_encoded_json_text = $json->encode( $perlvar );
+    return $utf8_encoded_json_text;
+}
+
+sub percent_encode {
+    my ($text) = @_;
+    my $uri_encoded_text = uri_escape_utf8( $text );
+    return $uri_encoded_text;
 }
 
 sub multi_input {
