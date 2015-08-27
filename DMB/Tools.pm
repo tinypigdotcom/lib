@@ -13,8 +13,9 @@ use JSON;
 use Term::ReadKey;
 use Time::Local;
 use URI::Escape;
+use Time::HiRes qw( usleep );
 
-our $VERSION = '0.0.8';
+our $VERSION = '0.0.9';
 
 our @ISA = qw(Exporter);
 
@@ -404,8 +405,12 @@ sub multi_input {
     }
     else {
         ReadMode ('cbreak');
-        if (defined ($char = ReadKey(-1)) ) {
-            $current_input_type = $INPUT_TYPE{STDIN};
+        for ( 1..30 ) {
+            if (defined ($char = ReadKey(-1)) ) {
+                $current_input_type = $INPUT_TYPE{STDIN};
+            }
+            last if $char;
+            usleep (100_000);
         }
         ReadMode ('normal');
 
@@ -413,7 +418,9 @@ sub multi_input {
             $current_input_type = $INPUT_TYPE{DEFAULT};
         }
     }
-    # warn "input_type is: $INPUT_LABEL{$input_type}\n";
+    my $PROG = $0;
+    $PROG =~ s{.*/}{};
+    warn "$PROG: input_type is $INPUT_LABEL{$current_input_type}\n";
 
     if ( $current_input_type == $INPUT_TYPE{FILEARGS} ) {
         local $/;
