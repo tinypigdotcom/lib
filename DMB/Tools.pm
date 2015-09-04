@@ -6,6 +6,7 @@ use warnings;
 
 require Exporter;
 
+use Carp 'longmess';
 use Data::Dumper;
 use Date::Parse;
 use IO::File;
@@ -24,6 +25,7 @@ our %EXPORT_TAGS = (
         qw(
           clip
           column_output
+          debug_log
           directory_read
           dt_first_value
           dt_log
@@ -37,6 +39,7 @@ our %EXPORT_TAGS = (
           nice_timestamp
           outfile
           percent_encode
+          print_to_debug_log
           pseudo_uuid
           random_date_past_year
           random_element
@@ -327,21 +330,28 @@ sub get_epoch_seconds {
 }
 
 sub timestamp {
-    my @params = @_;
-    my ( $sec, $min, $hour, $mday, $mon, $year );
+    my ( $params ) = @_;
+    my $time_text = $params->{time_text};
+    my ( $sec, $min, $hour, $mday, $mon, $year, $format );
 
-    if ( @params == 0 ) {
+    if ( $time_text ) {
+        ( $sec, $min, $hour, $mday, $mon, $year ) = gmtime(str2time($time_text,'GMT'));
+    }
+    else {
         ( $sec, $min, $hour, $mday, $mon, $year ) = localtime(time);
     }
-    elsif ( @params == 1 ) {
-        ( $sec, $min, $hour, $mday, $mon, $year ) = gmtime(str2time($params[0],'GMT'));
+
+    if ( $params->{readable} ) {
+        $format = '%04s%02s%02s%02s%02s%02s';
+    }
+    else {
+        $format = '%04s-%02s-%02s %02s:%02s:%02s';
     }
 
     $mon++;
     $year += 1900;
 
-    return sprintf( "%04s%02s%02s%02s%02s%02s",
-        $year, $mon, $mday, $hour, $min, $sec );
+    return sprintf( $format, $year, $mon, $mday, $hour, $min, $sec );
 }
 
 sub nice_timestamp {
@@ -360,6 +370,26 @@ sub nice_timestamp {
 
     return sprintf( "%04s-%02s-%02s %02s:%02s:%02s",
         $year, $mon, $mday, $hour, $min, $sec );
+}
+
+sub debug_log {
+    my ( $debug_file_path, @messages ) = @_;
+    return unless $debug_file_path;
+    my $timestamp = timestamp();
+    my $message = longmess( join ' ', @messages );
+    my $log_entry = "$timestamp $message";
+    print_to_debug_log($debug_file_path, "$log_entry\n");
+    return;
+}
+
+sub print_to_debug_log {
+    my ( $debug_file_path, $message ) = @_;
+
+    my $ofh = IO::File->new($debug_file_path, '>>');
+    die if (!defined $ofh);
+
+    print $ofh $message;
+    $ofh->close;
 }
 
 sub json {
