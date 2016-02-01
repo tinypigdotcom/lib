@@ -482,54 +482,126 @@ sub multi_input {
 1;
 
 __END__
-# Below is stub documentation for your module. You'd better edit it!
 
 =head1 NAME
 
-Foo - Perl extension for blah blah blah
+DMB::Tools - A collection of utilities I like to have handy
 
 =head1 SYNOPSIS
 
-  use Foo;
-  blah blah blah
+  use DMB::Util ':all';
+
+  # OR
+
+  use DMB::Util qw(
+      clip
+      column_output
+      debug_log
+      directory_read
+      dt_first_value
+      dt_log
+      file_contents
+      file_contents_flat
+      file_slurp
+      get_epoch_seconds
+      infile
+      init_random_names
+      json
+      multi_input
+      nice_timestamp
+      outfile
+      percent_encode
+      print_to_debug_log
+      pseudo_uuid
+      random_date_past_year
+      random_element
+      random_names
+      random_profile_id
+      random_words
+      timestamp
+      write_file
+  );
+
+  file_contents_flat('/tmp/file');
 
 =head1 DESCRIPTION
 
-Stub documentation for Foo, created by h2xs. It looks like the
-author of the extension was negligent enough to leave the stub
-unedited.
+C<DMB::Tools> contains a collection of utilities I like to have handy
 
-Blah blah blah.
+By default C<DMB::Tools> does not export anything.
 
-=head2 EXPORT
+=over 4
 
-None by default.
+=item B<clip>
 
+B<NOTE> this is an example documentation and has nothing to do with the actual
+function.
 
+  all_keys(%hash,@keys,@hidden);
 
-=head1 SEE ALSO
+all_keys() returns blahblah seed bytes used to randomise ordering.
 
-Mention other useful documentation such as the documentation of
-related modules or operating system documentation (such as man pages
-in UNIX), or any relevant external documentation such as RFCs or
-standards.
+Populates the arrays @keys with the all the keys that would pass
+keys that have not been utilized.
 
-If you have a mailing list set up for your module, mention it here.
+In the case of an unrestricted hash this will be equivalent to
 
-If you have a web site set up for your module, mention it here.
+  $ref = do {
+      @keys = keys %hash;
+  };
+
+=item B<column_output>
+=item B<debug_log>
+=item B<directory_read>
+=item B<dt_first_value>
+=item B<dt_log>
+=item B<file_contents>
+=item B<file_contents_flat>
+
+B<NOTE> this is an example documentation and has nothing to do with the actual
+function.
+
+  my $contents = file_contents_flat('/tmp/file');
+
+file_contents_flat() returns the entire contents of the specified file, minus
+any newline characters.
+
+=item B<file_slurp>
+=item B<get_epoch_seconds>
+=item B<infile>
+=item B<init_random_names>
+=item B<json>
+=item B<multi_input>
+=item B<nice_timestamp>
+=item B<outfile>
+=item B<percent_encode>
+=item B<print_to_debug_log>
+=item B<pseudo_uuid>
+=item B<random_date_past_year>
+=item B<random_element>
+=item B<random_names>
+=item B<random_profile_id>
+=item B<random_words>
+=item B<timestamp>
+=item B<write_file>
+
+=back
+
+=head1 CAVEATS
+
+Don't use clip() as there is a standard module that does it.
+
+=head1 BUGS
+
+None that I know of.
 
 =head1 AUTHOR
 
-Dave Bradford, E<lt>dbradford@office.omniti.comE<gt>
+David M Bradford <davembradford@gmail.com>
 
-=head1 COPYRIGHT AND LICENSE
+=head1 SEE ALSO
 
-Copyright (C) 2014 by Dave Bradford
-
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.16.3 or,
-at your option, any later version of Perl 5 you may have available.
-
+I don't know. Modules that this module uses, perhaps.
 
 =cut
 
