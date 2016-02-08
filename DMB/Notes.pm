@@ -107,6 +107,7 @@ sub markup {
 
 sub search_note {
     my ($self,@patterns) = @_;
+    @{$self->{output_lines}} = ();
     my $library = $self->{library};
     my $title   = $self->{title};
     my $Verbose = $self->{Verbose};
@@ -138,11 +139,11 @@ sub search_note {
     my %matches;
     my %excluded;
     my $total_excluded = 0;
-  OUTER: for (@notes) {
+  OUTER: for my $note (@notes) {
         for my $pattern (@patterns) {
-            next OUTER unless /$pattern/i;
+            next OUTER unless $note =~ /$pattern/i;
         }
-        if (/^[^\x0a\x0d]*library:(\S*)/) {
+        if ($note =~ /^[^\x0a\x0d]*library:(\S*)/) {
             my $note_lib = $1;
             if ( $library ne $note_lib ) {
                 $excluded{$note_lib}++;
@@ -157,8 +158,8 @@ sub search_note {
                 next OUTER;
             }
         }
-        s/^/  /mg;
-        $matches{$_}++;
+        $note =~ s/^/  /mg;
+        $matches{$note}++;
     }
     my $output_separator = "\n" . '+' . '=' x 78 . "\n|";
     my $title_separator  = "\n" . '+' . '-' x 68 . "\n";
@@ -198,8 +199,8 @@ sub search_note {
         my $entries = $total_excluded == 1 ? 'entry' : 'entries';
         my $were    = $total_excluded == 1 ? 'was'   : 'were';
         $self->output("($total_excluded $entries $were excluded in other libraries- ");
-        for ( keys %excluded ) {
-            $self->output("$_:$excluded{$_} ");
+        for my $excl ( keys %excluded ) {
+            $self->output("$excl:$excluded{$excl} ");
         }
         $self->output(")\n");
     }
