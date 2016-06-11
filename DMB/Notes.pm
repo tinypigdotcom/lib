@@ -82,29 +82,6 @@ sub add_note {
     return;
 }
 
-sub markup {
-    my ($self) = @_;
-    my $ESC = "\x1B";
-    my $reset = "${ESC}[0m";
-    my $bold = "${ESC}[1m";
-    my $italics = "${ESC}[3m";
-
-    if ( $_[0] =~ m{^[^\x0a\x0d]*format:markup} ) {
-        $_[0] =~ s{\s*format:markup}{};
-        for ($_[0]) {
-            s/\\\\/xDMBqbackslash/g;
-            s/\\\*/xDMBqasterisk/g;
-            s/\\\_/xDMBqunderscore/g;
-            s/\*([^*]*)\*/$bold$1$reset/g;
-            s/_([^_]*)_/$italics$1$reset/g;
-            s/xDMBqunderscore/_/g;
-            s/xDMBqasterisk/*/g;
-            s/xDMBqbackslash/\\/g;
-        }
-    }
-}
-
-
 sub search_note {
     my ($self,@patterns) = @_;
     @{$self->{output_lines}} = ();
@@ -213,6 +190,40 @@ sub search_note {
 
     return @{$self->{output_lines}};
 }
+
+# Black       0;30     Dark Gray     1;30
+# Blue        0;34     Light Blue    1;34
+# Green       0;32     Light Green   1;32
+# Cyan        0;36     Light Cyan    1;36
+# Red         0;31     Light Red     1;31
+# Purple      0;35     Light Purple  1;35
+# Brown       0;33     Yellow        1;33
+# Light Gray  0;37     White         1;37
+# [blue:this text is in blue]
+
+sub markup {
+    my ($self) = @_;
+    my $ESC = "\x1B";
+    my $reset = "${ESC}[0m";
+    my $bold = "${ESC}[1m";
+    my $italics = "${ESC}[3m";
+    $italics = "${ESC}[0;31m";
+
+    if ( $_[0] =~ m{^[^\x0a\x0d]*format:markup} ) {
+        $_[0] =~ s{\s*format:markup}{};
+        for ($_[0]) {
+            s/\\\\/xDMBqbackslash/g;
+            s/\\\*/xDMBqasterisk/g;
+            s/\\\_/xDMBqunderscore/g;
+            s/\*([^*]*)\*/$bold$1$reset/g;
+            s/_([^_]*)_/$italics$1$reset/g;
+            s/xDMBqunderscore/_/g;
+            s/xDMBqasterisk/*/g;
+            s/xDMBqbackslash/\\/g;
+        }
+    }
+}
+
 
 1;
 
