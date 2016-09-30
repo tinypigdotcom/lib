@@ -9,7 +9,7 @@ our $VERSION = '0.01';
 sub new {
     my $class = shift;
     my $self = bless {
-        source_dir => "/Volumes/NO\ NAME/",
+        source_dir => "/Volumes/WORKY/",
     }, $class;
     return $self;
 }
