@@ -5,50 +5,24 @@ import random
 def _hexy(num):
     retval=''
     for i in range(num):
-        retval = "{}{}".format(retval,random.choice('0123456789abcdef'))
+        retval += random.choice('0123456789abcdef')
     return retval
 
-class Dog:
-
-    kind = 'canine'         # class variable shared by all instances
-
-    def __init__(self, name):
-        self.name = name    # instance variable unique to each instance
-        self.distance = 0
-
-    def bark(self):
-        print(self.name, ": ruff! ruff!", sep="")
-
-    def report_distance(self):
-        print(self.name, "has walked", self.distance, "feet.")
-
-    def walk(self,distance=1):
-        self.distance += distance
-        self.report_distance()
-
-    def go_home(self):
-        self.distance = 0
-        print(self.name, "has gone home. ", end="")
-        self.report_distance()
+def get_fake_uuid():
+    fake_uuid = "-".join((
+        _hexy(8),
+        _hexy(4),
+        _hexy(4),
+        _hexy(4),
+        _hexy(12),
+    ))
+    return fake_uuid
 
 if __name__ == '__main__':
     import re
     import unittest
 
     class IsOddTests(unittest.TestCase):
-
-        def setUp(self):
-            self.d = Dog('Fido')
-
-        def testOne(self):
-            self.assertTrue(self.d.kind == 'canine')
-
-        def testTwo(self):
-            self.assertTrue(self.d.name == 'Fido')
-
-        def testThree(self):
-            f = Dog('Fido')
-            self.assertTrue(f.name == 'Fido')
 
         def test_hexy1(self):
             h = _hexy(1)
@@ -77,6 +51,12 @@ if __name__ == '__main__':
         def test_hexy5(self):
             h = _hexy(5)
             p = re.compile('^[0-9a-f]{5}$')
+            m = p.match(h)
+            self.assertTrue(m)
+
+        def test_UUID(self):
+            h = get_fake_uuid()
+            p = re.compile('^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$')
             m = p.match(h)
             self.assertTrue(m)
 
